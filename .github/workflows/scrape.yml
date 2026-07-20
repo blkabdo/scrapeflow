@@ -1,0 +1,135 @@
+name: Run Scraper
+
+on:
+  repository_dispatch:
+    types: [run-scraper]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Target URL to scrape'
+        required: true
+        type: string
+      scraper_type:
+        description: 'Scraper type'
+        required: true
+        type: choice
+        options:
+          - generic
+          - product
+          - news
+          - table
+          - custom
+        default: generic
+      output_format:
+        description: 'Output format'
+        required: true
+        type: choice
+        options:
+          - csv
+          - json
+          - both
+        default: both
+      custom_css:
+        description: 'Custom CSS selectors (JSON format)'
+        required: false
+        type: string
+        default: '{}'
+
+env:
+  SCRAPER_URL: ${{ github.event.client_payload.url || inputs.url }}
+  SCRAPER_TYPE: ${{ github.event.client_payload.scraper_type || inputs.scraper_type }}
+  OUTPUT_FORMAT: ${{ github.event.client_payload.output_format || inputs.output_format }}
+  CUSTOM_CSS: ${{ github.event.client_payload.custom_css || inputs.custom_css }}
+  RUN_ID: ${{ github.run_id }}
+  RUN_NUMBER: ${{ github.run_number }}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libnspr4 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libdbus-1-3 \
+            libxkbcommon0 \
+            libatspi2.0-0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libpango-1.0-0 \
+            libcairo2 \
+            libasound2 \
+            libwayland-client0
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright==1.44.0 beautifulsoup4 lxml requests aiohttp
+
+      - name: Install Playwright browsers
+        run: |
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run scraper
+        id: scrape
+        run: |
+          python engine/scraper.py \
+            --url "$SCRAPER_URL" \
+            --type "$SCRAPER_TYPE" \
+            --format "$OUTPUT_FORMAT" \
+            --css "$CUSTOM_CSS" \
+            --output "results_${RUN_ID}"
+
+      - name: Upload results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-results-${{ env.RUN_ID }}
+          path: |
+            results_*.csv
+            results_*.json
+          retention-days: 30
+
+      - name: Create GitHub Release with results
+        if: env.OUTPUT_FORMAT != 'csv'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="scrape-${{ env.RUN_NUMBER }}-$(date +%s)"
+          RELEASE_NAME="Scrape Results #${{ env.RUN_NUMBER }}"
+
+          gh release create "$TAG_NAME" \
+            --repo "${{ github.repository }}" \
+            --title "$RELEASE_NAME" \
+            --notes "Auto-generated scrape results for: ${{ env.SCRAPER_URL }}" \
+            results_*.csv results_*.json
+
+      - name: Notify via workflow summary
+        run: |
+          echo "## Scrape Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** ${{ env.SCRAPER_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Type:** ${{ env.SCRAPER_TYPE }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Format:** ${{ env.OUTPUT_FORMAT }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID:** ${{ env.RUN_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Results are available as artifacts and in the latest release." >> $GITHUB_STEP_SUMMARY

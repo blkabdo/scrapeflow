@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrapeFlow - Free Web Scraping Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕷️</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🕷️</span>
+                <h1>ScrapeFlow</h1>
+            </div>
+            <p class="tagline">Free & Open Source Web Scraping Powered by GitHub Actions</p>
+        </header>
+
+        <main>
+            <section class="config-panel">
+                <h2>Configure Scraper</h2>
+
+                <div class="form-group">
+                    <label for="pat">GitHub Personal Access Token</label>
+                    <div class="input-with-action">
+                        <input type="password" id="pat" placeholder="ghp_xxxxxxxxxxxx" />
+                        <button id="toggle-pat" class="btn-icon" title="Show/Hide">👁️</button>
+                    </div>
+                    <small>Must be a <strong>Classic token</strong> (starts with <code>ghp_</code>) with <code>repo</code> scope. <a href="https://github.com/settings/tokens/new" target="_blank">Create one here</a></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="repo">Repository <span class="required">*</span></label>
+                    <input type="text" id="repo" placeholder="username/scrapeflow" />
+                    <small>Format: owner/repo-name</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="url">Target URL <span class="required">*</span></label>
+                    <input type="url" id="url" placeholder="https://example.com" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="scraper-type">Scraper Type</label>
+                        <select id="scraper-type">
+                            <option value="generic">Generic Page</option>
+                            <option value="product">Product Page</option>
+                            <option value="news">News Article</option>
+                            <option value="table">Table Data</option>
+                            <option value="custom">Custom CSS</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="output-format">Output Format</label>
+                        <select id="output-format">
+                            <option value="both">CSV + JSON</option>
+                            <option value="csv">CSV Only</option>
+                            <option value="json">JSON Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="custom-css-group" style="display: none;">
+                    <label for="custom-css">Custom CSS Selectors (JSON)</label>
+                    <textarea id="custom-css" rows="4" placeholder='{"title": "h1", "price": ".price", "description": ".desc"}'></textarea>
+                    <small>Map field names to CSS selectors</small>
+                </div>
+
+                <button id="start-scrape" class="btn-primary">
+                    <span class="btn-text">Start Scraping</span>
+                    <span class="btn-loading" style="display:none;">Dispatching...</span>
+                </button>
+            </section>
+
+            <section class="status-panel" id="status-panel" style="display: none;">
+                <h2>Status</h2>
+                <div class="status-content">
+                    <div class="status-item" id="dispatch-status">
+                        <span class="status-dot"></span>
+                        <span class="status-label">Dispatch</span>
+                        <span class="status-value">Waiting...</span>
+                    </div>
+                    <div class="status-item" id="run-status">
+                        <span class="status-dot"></span>
+                        <span class="status-label">Workflow Run</span>
+                        <span class="status-value">-</span>
+                    </div>
+                </div>
+                <div class="run-link" id="run-link" style="display: none;">
+                    <a id="run-url" href="#" target="_blank">View Run on GitHub →</a>
+                </div>
+            </section>
+
+            <section class="history-panel">
+                <h2>Recent Scrapes</h2>
+                <div id="history-list" class="history-list">
+                    <p class="empty-state">No scrapes yet. Configure and run your first scrape above.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Open Source & Free Forever | Powered by GitHub Actions</p>
+            <p class="links">
+                <a href="https://github.com" target="_blank">GitHub</a> ·
+                <a href="https://github.com/settings/tokens/new" target="_blank">Create Token</a> ·
+                <a href="https://docs.github.com/en/actions" target="_blank">Actions Docs</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
