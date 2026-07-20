@@ -1,0 +1,25 @@
+{
+  "url": "https://example.com",
+  "scraped_at": "2026-07-20T10:56:59.138417",
+  "scraper_type": "generic",
+  "status": "success",
+  "data": {
+    "title": [
+      "Example Domain",
+      "Example Domain"
+    ],
+    "description": [
+      "This domain is for use in documentation examples without needing permission. Avoid use in operations.",
+      "Learn more"
+    ],
+    "links": "Learn more",
+    "images": null,
+    "all_links": [
+      "https://iana.org/domains/example"
+    ],
+    "all_images": [],
+    "meta": {
+      "viewport": "width=device-width, initial-scale=1"
+    }
+  }
+}

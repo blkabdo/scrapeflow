@@ -70,14 +70,21 @@ async function githubApi(endpoint, token, method = "GET", body = null) {
     const resp = await fetch(`https://api.github.com${endpoint}`, opts);
 
     if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
+        const errText = await resp.text();
+        let err = {};
+        try { err = JSON.parse(errText); } catch {}
         throw new Error(
-            err.message || `GitHub API error: ${resp.status} ${resp.statusText}`
+            err.message || `HTTP ${resp.status}: ${resp.statusText}`
         );
     }
 
     const text = await resp.text();
     return text ? JSON.parse(text) : {};
+}
+
+async function detectRepo(pat) {
+    const user = await githubApi("/user", pat);
+    return user.login;
 }
 
 async function dispatchScrape(config) {
@@ -148,6 +155,16 @@ function init() {
     if (config.repo) els.repo.value = config.repo;
 
     renderHistory(history, els);
+
+    els.pat.addEventListener("blur", async () => {
+        const pat = els.pat.value.trim();
+        if (pat && pat.startsWith("ghp_") && !els.repo.value.trim()) {
+            try {
+                const username = await detectRepo(pat);
+                els.repo.value = username + "/scrapeflow";
+            } catch {}
+        }
+    });
 
     els.scraperType.addEventListener("change", () => {
         els.customCssGroup.style.display =
@@ -279,6 +296,13 @@ function init() {
                     + "2. Name it anything\n"
                     + "3. Check the 'repo' scope (all sub-items)\n"
                     + "4. Generate & paste the new ghp_... token";
+            } else if (msg.includes("Not Found")) {
+                msg = "Repository not found!\n\n"
+                    + "Make sure:\n"
+                    + "1. Repository format is: username/repo-name\n"
+                    + "2. Your token has 'repo' scope\n"
+                    + "3. The repository exists on GitHub\n\n"
+                    + "Your token username: (check token works)";
             }
             alert("Dispatch failed: " + msg);
         } finally {
