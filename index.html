@@ -32,7 +32,7 @@
 
                 <div class="form-group">
                     <label for="repo">Repository <span class="required">*</span></label>
-                    <input type="text" id="repo" placeholder="username/scrapeflow" />
+                    <input type="text" id="repo" placeholder="blkabdo/scrapeflow" value="blkabdo/scrapeflow" />
                     <small>Format: owner/repo-name</small>
                 </div>
 
@@ -73,6 +73,7 @@
                     <span class="btn-text">Start Scraping</span>
                     <span class="btn-loading" style="display:none;">Dispatching...</span>
                 </button>
+                <div id="debug-log" style="margin-top:12px;padding:12px;background:var(--bg-input);border-radius:8px;font-family:monospace;font-size:12px;color:var(--text-muted);display:none;white-space:pre-wrap;max-height:200px;overflow-y:auto;"></div>
             </section>
 
             <section class="status-panel" id="status-panel" style="display: none;">
