@@ -62,10 +62,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install playwright beautifulsoup4 lxml
 
-      - name: Install Playwright browsers and deps
+      - name: Install Playwright browsers
         run: |
-          playwright install chromium
-          sudo playwright install-deps chromium
+          playwright install --with-deps chromium
 
       - name: Run scraper
         id: scrape
